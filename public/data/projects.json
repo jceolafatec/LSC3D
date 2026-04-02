@@ -1,0 +1,67 @@
+[
+  {
+    "id": "demo-campervan",
+    "title": "Campervan Bed Fitout",
+    "client": "Demo Client",
+    "address": "Melbourne, VIC",
+    "date": "2026-01-15",
+    "status": "completed",
+    "description": "Custom campervan bed fitout with integrated storage and premium timber finishes. Interactive 3D model included.",
+    "model_path": "models/campervan.glb",
+    "pdf_path": "",
+    "image": "",
+    "gallery_images": []
+  },
+  {
+    "id": "jbhifi-sydney",
+    "title": "JB Hi-Fi Sydney",
+    "client": "JB Hi-Fi",
+    "address": "Sydney, NSW 2000",
+    "date": "2026-02-15",
+    "status": "completed",
+    "description": "Complete shopfitting project including custom display shelving and POS counter systems.",
+    "model_path": "",
+    "pdf_path": "",
+    "image": "",
+    "gallery_images": []
+  },
+  {
+    "id": "dental-clinic-parkview",
+    "title": "Dental Clinic – Parkview",
+    "client": "DDA Dental",
+    "address": "Parkview, VIC 3052",
+    "date": "2025-11-30",
+    "status": "completed",
+    "description": "Professional dental facility fitout with sterilization lab, reception, and procedure rooms.",
+    "model_path": "",
+    "pdf_path": "",
+    "image": "",
+    "gallery_images": []
+  },
+  {
+    "id": "kitchen-residential",
+    "title": "Kitchen – Residential",
+    "client": "Private Residential",
+    "address": "Melbourne, VIC",
+    "date": "2025-10-15",
+    "status": "completed",
+    "description": "Custom kitchen cabinetry with integrated appliances and premium finishes.",
+    "model_path": "",
+    "pdf_path": "",
+    "image": "",
+    "gallery_images": []
+  },
+  {
+    "id": "commercial-office-fit",
+    "title": "Commercial Office Fit",
+    "client": "Corporate Client",
+    "address": "Brisbane, QLD",
+    "date": "2025-09-20",
+    "status": "in_progress",
+    "description": "Large-scale commercial office fit-out with workstations and meeting areas.",
+    "model_path": "",
+    "pdf_path": "",
+    "image": "",
+    "gallery_images": []
+  }
+]
