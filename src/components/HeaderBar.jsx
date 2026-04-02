@@ -1,5 +1,5 @@
 export function HeaderBar() {
-  const logoSrc = `${import.meta.env.BASE_URL}assets/img/logo.jpg`
+  const logoSrc = `${import.meta.env.BASE_URL}assets/logo.png`
 
   return (
     <header className="dashboard-header-shell">

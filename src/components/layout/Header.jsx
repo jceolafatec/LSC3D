@@ -1,5 +1,5 @@
 export function Header({ project, title, subtitle, statusLabel }) {
-  const logoSrc = `${import.meta.env.BASE_URL}assets/img/logo.jpg`
+  const logoSrc = `${import.meta.env.BASE_URL}assets/logo.png`
 
   return (
     <header className="dashboard-header" aria-label="Project header">

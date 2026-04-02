@@ -10,7 +10,7 @@ function buildViewerUrl(modelUrl) {
 }
 
 export function ClientPage() {
-  const logoSrc = `${import.meta.env.BASE_URL}assets/img/logo.jpg`
+  const logoSrc = `${import.meta.env.BASE_URL}assets/logo.png`
   const [search, setSearch] = useState('')
   const [activeClient, setActiveClient] = useState('')
   const [activeJob, setActiveJob] = useState('')

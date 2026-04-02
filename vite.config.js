@@ -1,7 +1,21 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import fs from 'node:fs/promises'
 import path from 'node:path'
+
+function createStaticViewerAssetPlugin() {
+  const workspaceRoot = process.cwd()
+  const viewerScriptSource = path.resolve(workspaceRoot, 'assets/js/viewer.js')
+  const viewerScriptTarget = path.resolve(workspaceRoot, 'dist/assets/js/viewer.js')
+
+  return {
+    name: 'static-viewer-asset-plugin',
+    async closeBundle() {
+      await fs.mkdir(path.dirname(viewerScriptTarget), { recursive: true })
+      await fs.copyFile(viewerScriptSource, viewerScriptTarget)
+    },
+  }
+}
 
 function createCommentsApiPlugin() {
   const workspaceRoot = process.cwd()
@@ -331,11 +345,24 @@ function createProjectMetaApiPlugin() {
   }
 }
 
-export default defineConfig(({ command }) => ({
-  plugins: [react(), createCommentsApiPlugin(), createProjectMetaApiPlugin()],
-  base: command === 'build' ? '/lscfitouts/' : '/',
-  assetsInclude: ['**/*.glb', '**/*.gltf'],
-  build: {
-    outDir: 'dist',
-  },
-}))
+export default defineConfig(({ command, mode }) => {
+  const env = loadEnv(mode, process.cwd(), '')
+  const configuredBase = (env.VITE_BASE_URL || '').trim()
+
+  return {
+    plugins: [react(), createCommentsApiPlugin(), createProjectMetaApiPlugin(), createStaticViewerAssetPlugin()],
+    base: command === 'build' ? configuredBase || '/lscfitouts/' : '/',
+    assetsInclude: ['**/*.glb', '**/*.gltf'],
+    build: {
+      outDir: 'dist',
+      rollupOptions: {
+        input: {
+          main: path.resolve(process.cwd(), 'index.html'),
+          client: path.resolve(process.cwd(), 'client.html'),
+          viewer: path.resolve(process.cwd(), 'viewer.html'),
+          viewerCommented: path.resolve(process.cwd(), 'viewer-commented.html'),
+        },
+      },
+    },
+  }
+})
