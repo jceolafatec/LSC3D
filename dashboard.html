@@ -848,7 +848,11 @@ function applyProject(p) {
     p.models.forEach((m, i) => {
       const li = document.createElement('li');
       li.className = 'clickable' + (i === 0 ? ' selected-asset' : '');
-      li.innerHTML = `<span class="asset-icon">⬡</span> ${m.name}`;
+      const icon = document.createElement('span');
+      icon.className = 'asset-icon';
+      icon.textContent = '⬡';
+      li.appendChild(icon);
+      li.appendChild(document.createTextNode(' ' + m.name));
       li.onclick = () => {
         modelsList.querySelectorAll('li').forEach(x => x.classList.remove('selected-asset'));
         li.classList.add('selected-asset');
@@ -858,7 +862,9 @@ function applyProject(p) {
       modelsList.appendChild(li);
     });
   } else {
-    modelsList.innerHTML = '<li>No models available.</li>';
+    const li = document.createElement('li');
+    li.textContent = 'No models available.';
+    modelsList.appendChild(li);
   }
 
   // Drawings list
@@ -869,7 +875,11 @@ function applyProject(p) {
     p.drawings.forEach((d, i) => {
       const li = document.createElement('li');
       li.className = 'clickable' + (i === 0 ? ' selected-asset' : '');
-      li.innerHTML = `<span class="asset-icon">📄</span> ${d.name}`;
+      const icon = document.createElement('span');
+      icon.className = 'asset-icon';
+      icon.textContent = '📄';
+      li.appendChild(icon);
+      li.appendChild(document.createTextNode(' ' + d.name));
       li.onclick = () => {
         drawingsList.querySelectorAll('li').forEach(x => x.classList.remove('selected-asset'));
         li.classList.add('selected-asset');
@@ -1182,9 +1192,19 @@ const d3 = (() => {
       const row = document.createElement('div');
       row.className = 'part-toggle';
       const id = `pt_${name.replace(/\W/g, '_')}`;
-      row.innerHTML = `
-        <input type="checkbox" id="${id}" checked onchange="d3.togglePartByName('${name}', this.checked)" />
-        <label for="${id}">${name}</label>`;
+
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.id = id;
+      cb.checked = true;
+      cb.addEventListener('change', () => togglePartByName(name, cb.checked));
+
+      const label = document.createElement('label');
+      label.htmlFor = id;
+      label.textContent = name;
+
+      row.appendChild(cb);
+      row.appendChild(label);
       container.appendChild(row);
     });
     document.getElementById('parts-panel').style.display = 'block';
