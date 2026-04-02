@@ -1,0 +1,136 @@
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-lg);
+  gap: var(--spacing-xl);
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  min-width: fit-content;
+}
+
+.sidebar-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--color-text-primary);
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
+}
+
+.sidebar-toggle:hover {
+  background: var(--color-light-grey);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--color-dark-navy), var(--color-gold));
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-white);
+}
+
+.logo-text {
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+}
+
+.header-center {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+
+.project-title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.project-client {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  min-width: fit-content;
+}
+
+.status-badge {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--radius-md);
+  background: var(--color-light-grey);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.status-badge.status-completed {
+  background: #E8F5E9;
+  color: #2E7D32;
+}
+
+.status-badge.status-in_progress {
+  background: #E3F2FD;
+  color: #1565C0;
+}
+
+.status-badge.status-pending {
+  background: #FFF3E0;
+  color: #E65100;
+}
+
+.status-badge.status-on_hold {
+  background: #FCE4EC;
+  color: #C2185B;
+}
+
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 0 var(--spacing-md);
+    gap: var(--spacing-md);
+  }
+
+  .sidebar-toggle {
+    display: flex;
+  }
+
+  .project-title {
+    font-size: 1rem;
+  }
+
+  .project-client {
+    display: none;
+  }
+
+  .status-badge {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+  }
+}
