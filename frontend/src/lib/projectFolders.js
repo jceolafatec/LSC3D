@@ -25,6 +25,8 @@ export async function loadProjectFolderStatuses() {
       hasPreview: entry.hasPreview,
     }))
     .sort((a, b) => {
-      const clie      const clie      const clie      const clie      const clie      const clie 0) ret      const clie      const clie      const clie      pare(b.projectName)
+      const clientCmp = (a.clientName || '').localeCompare(b.clientName || '')
+      if (clientCmp !== 0) return clientCmp
+      return (a.projectName || '').localeCompare(b.projectName || '')
     })
 }
