@@ -23,9 +23,9 @@
 }
 
 .header-logo {
-  width: 148px;
-  max-width: 40vw;
-  height: auto;
+  width: auto;
+  max-width: 120px;
+  max-height: 56px;
   object-fit: contain;
   display: block;
   transform: translateZ(0);
@@ -1061,9 +1061,9 @@
 }
 
 .client-logo {
-  width: 138px;
-  max-width: 70%;
-  height: auto;
+  width: auto;
+  max-width: 120px;
+  max-height: 80px;
   object-fit: contain;
   margin-bottom: 0.45rem;
 }
@@ -1436,7 +1436,8 @@
   }
 
   .header-logo {
-    width: 126px;
+    max-width: 96px;
+    max-height: 44px;
   }
 
   .dashboard-layout {

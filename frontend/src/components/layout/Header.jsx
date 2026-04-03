@@ -11,7 +11,7 @@ export const Header = memo(function Header({ project, title, subtitle, statusLab
           alt="LSC Fitouts"
           className="header-logo"
           width="148"
-          height="37"
+          height="148"
           fetchpriority="high"
           decoding="async"
         />

@@ -4,19 +4,32 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 
 /**
- * During build, copy the standalone viewer script into the dist output so
- * viewer.html can reference it at /assets/js/viewer.js.
+ * During build, copy the standalone static assets (CSS, JS, img) into the dist
+ * output so that home.html and viewer.html can reference them correctly.
  */
 function createStaticViewerAssetPlugin() {
   const workspaceRoot = process.cwd()
-  const viewerScriptSource = path.resolve(workspaceRoot, 'assets/js/viewer.js')
-  const viewerScriptTarget = path.resolve(workspaceRoot, 'dist/assets/js/viewer.js')
+  const assetsSource = path.resolve(workspaceRoot, 'assets')
+  const assetsTarget = path.resolve(workspaceRoot, 'dist/assets')
+
+  async function copyDir(src, dest) {
+    await fs.mkdir(dest, { recursive: true })
+    const entries = await fs.readdir(src, { withFileTypes: true })
+    for (const entry of entries) {
+      const srcPath = path.join(src, entry.name)
+      const destPath = path.join(dest, entry.name)
+      if (entry.isDirectory()) {
+        await copyDir(srcPath, destPath)
+      } else {
+        await fs.copyFile(srcPath, destPath)
+      }
+    }
+  }
 
   return {
     name: 'static-viewer-asset-plugin',
     async closeBundle() {
-      await fs.mkdir(path.dirname(viewerScriptTarget), { recursive: true })
-      await fs.copyFile(viewerScriptSource, viewerScriptTarget)
+      await copyDir(assetsSource, assetsTarget)
     },
   }
 }
@@ -34,6 +47,7 @@ export default defineConfig({
         main: path.resolve(import.meta.dirname, 'index.html'),
         client: path.resolve(import.meta.dirname, 'client.html'),
         viewer: path.resolve(import.meta.dirname, 'viewer.html'),
+        home: path.resolve(import.meta.dirname, 'home.html'),
       },
     },
   },
