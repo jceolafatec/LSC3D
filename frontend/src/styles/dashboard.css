@@ -27,6 +27,8 @@
   max-width: 40vw;
   height: auto;
   object-fit: contain;
+  display: block;
+  transform: translateZ(0);
 }
 
 .header-center {
@@ -308,10 +310,66 @@
   font-size: clamp(1.2rem, 2.2vw, 1.75rem);
 }
 
+.project-catalog-header {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.project-catalog-header > div {
+  flex: 1;
+}
+
 .project-catalog-header p {
   margin: 0.3rem 0 0;
   color: var(--color-muted);
   font-size: 0.85rem;
+}
+
+.sync-json-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.42rem 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.sync-json-btn:hover:not(:disabled) {
+  border-color: var(--color-accent);
+  color: var(--color-accent-deep);
+}
+
+.sync-json-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.sync-json-btn.is-done {
+  border-color: #4a9a6a;
+  color: #4a9a6a;
+}
+
+.sync-json-btn.is-error {
+  border-color: #cc3333;
+  color: #cc3333;
+}
+
+.sync-json-btn .spin {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .project-catalog-grid {
@@ -738,7 +796,242 @@
 
 .client-drawing-list {
   display: grid;
+  gap: 0.5rem;
+}
+
+.client-drawing-crud {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #fff;
+  padding: 0.5rem;
+  display: grid;
   gap: 0.4rem;
+}
+
+.client-drawing-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.drawing-control-group {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.drawing-media-half {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 180px;
+}
+
+.drawing-file-name {
+  flex: 1;
+  font-size: 0.78rem;
+  color: var(--color-ink);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  min-width: 60px;
+}
+
+.drawing-name-label {
+  flex: 1;
+  min-width: 100px;
+  font-size: 0.82rem;
+  color: var(--color-ink);
+  padding: 0 0.6rem;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.client-drawing-expand {
+  border-top: 1px solid var(--color-border);
+  padding-top: 0.45rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.drawing-path-group {
+  display: grid;
+  gap: 0.28rem;
+}
+
+.drawing-path-label {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.drawing-path-label span {
+  color: var(--color-muted);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.drawing-path-label input {
+  min-height: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--color-ink);
+  padding: 0.4rem 0.5rem;
+  font-size: 0.78rem;
+  font-family: monospace;
+}
+
+.drawing-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+  color: var(--color-ink);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.drawing-btn:hover:not(:disabled) {
+  border-color: var(--color-ink);
+}
+
+.drawing-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.drawing-btn.is-disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.drawing-btn-pdf:not(:disabled):hover {
+  border-color: #d0442a;
+  color: #d0442a;
+}
+
+.drawing-btn-3d:not(:disabled):hover {
+  border-color: #2a6dd0;
+  color: #2a6dd0;
+}
+
+.drawing-btn-edit-path:not(:disabled):hover {
+  border-color: var(--color-accent, #c8a45d);
+  background: var(--color-accent-wash, rgba(200, 164, 93, 0.1));
+}
+
+.drawing-btn-upload:not(:disabled):hover {
+  border-color: #4a7dc8;
+  background: rgba(74, 125, 200, 0.1);
+  color: #4a7dc8;
+}
+
+.drawing-btn-edit:not(:disabled):hover {
+  border-color: var(--color-accent-deep, #8a6a2a);
+  color: var(--color-accent-deep, #8a6a2a);
+}
+
+.drawing-btn-edit:disabled {
+  opacity: 0.5;
+}
+
+.drawing-btn-save {
+  border-color: #4a9a6a;
+  color: #4a9a6a;
+}
+
+.drawing-btn-save:hover:not(:disabled) {
+  background: #4a9a6a;
+  color: #fff;
+}
+
+.drawing-btn-cancel:hover:not(:disabled) {
+  border-color: #999;
+  color: #555;
+}
+
+.drawing-btn-delete:not(:disabled):hover {
+  border-color: #cc3333;
+  color: #cc3333;
+}
+
+.drawing-btn-add {
+  border-color: var(--color-accent, #c8a45d);
+  color: var(--color-accent-deep, #8a6a2a);
+}
+
+.drawing-btn-add:hover:not(:disabled) {
+  background: var(--color-accent, #c8a45d);
+  color: #fff;
+}
+
+.client-job-name-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.45rem;
+}
+
+.client-job-name-label {
+  flex: 1;
+  display: grid;
+  gap: 0.28rem;
+}
+
+.client-job-name-label span {
+  color: var(--color-muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.client-job-name-label input {
+  min-height: 38px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--color-ink);
+  padding: 0.55rem 0.65rem;
+}
+
+.client-job-name-label input[readonly] {
+  background: color-mix(in srgb, #ffffff 88%, var(--color-accent-wash));
+}
+
+.client-edit-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.45rem;
+}
+
+.client-edit-label {
+  flex: 1;
+  display: grid;
+  gap: 0.28rem;
+}
+
+.client-edit-label span {
+  color: var(--color-muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.client-edit-label input {
+  min-height: 38px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--color-ink);
+  padding: 0.55rem 0.65rem;
 }
 
 .client-page-shell {

@@ -34,7 +34,6 @@ export default defineConfig({
         main: path.resolve(import.meta.dirname, 'index.html'),
         client: path.resolve(import.meta.dirname, 'client.html'),
         viewer: path.resolve(import.meta.dirname, 'viewer.html'),
-        viewerCommented: path.resolve(import.meta.dirname, 'viewer-commented.html'),
       },
     },
   },

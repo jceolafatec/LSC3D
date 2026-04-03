@@ -7,6 +7,7 @@ const cors = require('cors')
 const commentsRouter = require('./routes/comments')
 const projectMetaRouter = require('./routes/projectMeta')
 const projectsRouter = require('./routes/projects')
+const syncJsonRouter = require('./routes/syncJson')
 
 const PORT = process.env.PORT || 3100
 const HOST = process.env.HOST || '0.0.0.0'
@@ -27,6 +28,7 @@ app.set('projectsRoot', PROJECTS_ROOT)
 app.use('/api/comments', commentsRouter)
 app.use('/api/project-meta', projectMetaRouter)
 app.use('/api/projects', projectsRouter)
+app.use('/api/sync-json', syncJsonRouter)
 
 // Health check
 app.get('/api/health', (req, res) => {

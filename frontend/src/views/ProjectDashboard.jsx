@@ -58,9 +58,12 @@ export function ProjectDashboard() {
   const [copiedShareId, setCopiedShareId] = useState('')
   const [draftEdits, setDraftEdits] = useState({})
   const [editingJobs, setEditingJobs] = useState({})
+  const [expandedDrawings, setExpandedDrawings] = useState({})
+  const [drawingPathDrafts, setDrawingPathDrafts] = useState({})
   const [metaPresence, setMetaPresence] = useState({})
   const [folderStatuses, setFolderStatuses] = useState([])
   const [clientTree, setClientTree] = useState([])
+  const [syncState, setSyncState] = useState('idle') // idle | syncing | done | error
 
   // Load project from URL on mount
   useEffect(() => {
@@ -275,7 +278,7 @@ export function ProjectDashboard() {
       })
       .filter((client) => client.jobs.length > 0)
   }, [apiOverrides, labelOverrides, normalizedSearchTerm])
-  const headerTitle = status === 'catalog' ? 'lscfitouts' : undefined
+  const headerTitle = status === 'catalog' ? 'Dashboard' : undefined
   const headerSubtitle = status === 'catalog' ? 'All jobs discovered under ./projects/<client>/<job>' : undefined
   const headerStatus = status === 'catalog' ? `${folderStatuses.length} Projects` : undefined
   const catalogStats = {
@@ -283,6 +286,19 @@ export function ProjectDashboard() {
     withModel: folderStatuses.filter((entry) => entry.hasModel).length,
     withPdf: folderStatuses.filter((entry) => entry.hasPdf).length,
     missingBoth: folderStatuses.filter((entry) => !entry.hasModel && !entry.hasPdf).length,
+  }
+
+  async function syncProjectsJson() {
+    setSyncState('syncing')
+    try {
+      const res = await fetch('/api/sync-json', { method: 'POST' })
+      if (!res.ok) throw new Error(`Server error ${res.status}`)
+      setSyncState('done')
+      setTimeout(() => setSyncState('idle'), 3000)
+    } catch {
+      setSyncState('error')
+      setTimeout(() => setSyncState('idle'), 4000)
+    }
   }
 
   function openCatalogEntry(entry) {
@@ -349,6 +365,23 @@ export function ProjectDashboard() {
         },
       }
     })
+  }
+
+  function toggleDrawingExpanded(drawingId) {
+    setExpandedDrawings((prev) => ({
+      ...prev,
+      [drawingId]: !prev[drawingId],
+    }))
+  }
+
+  function updateDrawingPathDraft(drawingId, field, value) {
+    setDrawingPathDrafts((prev) => ({
+      ...prev,
+      [drawingId]: {
+        ...prev[drawingId],
+        [field]: value,
+      },
+    }))
   }
 
   async function saveJobEdits(client, job) {
@@ -451,6 +484,11 @@ export function ProjectDashboard() {
     }
   }
 
+  function handleAddDrawing(client, job) {
+    // TODO: wire to POST /api/projects/add-drawing to create folder structure
+    window.alert(`Add drawing to ${client.displayClientName} / ${job.displayJobName} — coming soon`)
+  }
+
   return (
     <div className="app-shell">
       <Header project={project} title={headerTitle} subtitle={headerSubtitle} statusLabel={headerStatus} />
@@ -479,8 +517,31 @@ export function ProjectDashboard() {
         {status === 'catalog' && (
           <section className="project-catalog" aria-label="Project folder catalog">
             <header className="project-catalog-header">
-              <h1>lscfitouts</h1>
-              <p>Loaded from ./projects/&lt;client-name&gt;/&lt;job-name&gt;/...</p>
+              <div>
+                <h1>Dashboard</h1>
+                <p>Loaded from ./projects/&lt;client-name&gt;/&lt;job-name&gt;/...</p>
+              </div>
+              <button
+                type="button"
+                className={`sync-json-btn${syncState === 'syncing' ? ' is-syncing' : syncState === 'done' ? ' is-done' : syncState === 'error' ? ' is-error' : ''}`}
+                onClick={syncProjectsJson}
+                disabled={syncState === 'syncing'}
+                title="Write all project data + file paths to projects/projects.json"
+              >
+                {syncState === 'syncing' && (
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true" className="spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                )}
+                {syncState === 'done' && (
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                )}
+                {syncState === 'error' && (
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                )}
+                {syncState === 'idle' && (
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3"/></svg>
+                )}
+                {syncState === 'syncing' ? 'Syncing…' : syncState === 'done' ? 'Saved!' : syncState === 'error' ? 'Failed' : 'Sync JSON'}
+              </button>
             </header>
 
             {folderStatuses.length === 0 ? (
@@ -579,40 +640,58 @@ export function ProjectDashboard() {
                                     </div>
                                   </div>
 
-                                  <label>
-                                    <span>Job</span>
-                                    <input
-                                      type="text"
-                                      value={isEditing ? draft?.jobName || '' : job.displayJobName}
-                                      onChange={(event) => updateDraftField(jobId, 'jobName', event.target.value)}
-                                      readOnly={!isEditing}
-                                    />
-                                  </label>
-
-                                  <div className="client-job-controls">
-                                    <button type="button" onClick={() => beginEditJob(client, job)} disabled={isEditing}>
-                                      Edit
-                                    </button>
-                                    <button type="button" onClick={() => saveJobEdits(client, job)} disabled={!isEditing || hasSavedMeta}>
-                                      Save
-                                    </button>
-                                    <button type="button" onClick={() => saveJobEdits(client, job)} disabled={!isEditing || !hasSavedMeta}>
-                                      Update
-                                    </button>
-                                    <button type="button" onClick={() => deleteJobEdits(client, job)}>
-                                      Delete
+                                  <div className="client-job-name-row">
+                                    {!isEditing && (
+                                      <button
+                                        type="button"
+                                        className="drawing-btn drawing-btn-edit"
+                                        onClick={() => beginEditJob(client, job)}
+                                        title="Edit"
+                                        aria-label="Edit job metadata"
+                                      >
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                      </button>
+                                    )}
+                                    <label className="client-job-name-label">
+                                      <span>Job</span>
+                                      <input
+                                        type="text"
+                                        value={isEditing ? draft?.jobName || '' : job.displayJobName}
+                                        onChange={(event) => updateDraftField(jobId, 'jobName', event.target.value)}
+                                        readOnly={!isEditing}
+                                      />
+                                    </label>
+                                    <button
+                                      type="button"
+                                      className="drawing-btn drawing-btn-add"
+                                      onClick={() => handleAddDrawing(client, job)}
+                                      title="Add drawing"
+                                      aria-label="Add a drawing"
+                                    >
+                                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                                     </button>
                                   </div>
 
                                   {isEditing && (
-                                    <label>
-                                      <span>Client</span>
-                                      <input
-                                        type="text"
-                                        value={draft?.clientName || ''}
-                                        onChange={(event) => updateDraftField(jobId, 'clientName', event.target.value)}
-                                      />
-                                    </label>
+                                    <div className="client-edit-row">
+                                      <button
+                                        type="button"
+                                        className="drawing-btn drawing-btn-edit"
+                                        disabled
+                                        title="Editing"
+                                        aria-label="In edit mode"
+                                      >
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                      </button>
+                                      <label className="client-edit-label">
+                                        <span>Client</span>
+                                        <input
+                                          type="text"
+                                          value={draft?.clientName || ''}
+                                          onChange={(event) => updateDraftField(jobId, 'clientName', event.target.value)}
+                                        />
+                                      </label>
+                                    </div>
                                   )}
 
                                   <div className="client-share-box">
@@ -640,16 +719,151 @@ export function ProjectDashboard() {
                                   <div className="client-drawing-list">
                                     {job.drawings.map((drawing) => {
                                       const drawingId = `${client.clientSlug}/${job.jobSlug}/${drawing.drawingSlug}`
+                                      const drawingPdfUrl = drawing.drawingFiles?.[0] || ''
+                                      const drawingModelUrl = drawing.modelFiles?.[0]
+                                        ? buildStandaloneViewerUrl(drawing.modelFiles[0])
+                                        : ''
+                                      const pdfFileName = drawingPdfUrl ? drawingPdfUrl.split('/').pop() : 'No PDF'
+                                      const modelFileName = drawing.modelFiles?.[0] ? drawing.modelFiles[0].split('/').pop() : 'No Model'
+                                      const isDrawingExpanded = expandedDrawings[drawingId]
+                                      const pathDraft = drawingPathDrafts[drawingId] || { pdf: drawingPdfUrl, model: drawingModelUrl }
+                                      
                                       return (
-                                        <label key={drawingId}>
-                                          <span>Drawing</span>
-                                          <input
-                                            type="text"
-                                            value={isEditing ? draft?.drawings?.[drawing.drawingSlug] || '' : drawing.displayTitle}
-                                            onChange={(event) => updateDraftDrawing(jobId, drawing.drawingSlug, event.target.value)}
-                                            readOnly={!isEditing}
-                                          />
-                                        </label>
+                                        <div key={drawingId} className="client-drawing-crud">
+                                          <div className="client-drawing-row">
+                                            <div className="drawing-media-half">
+                                              <button
+                                                type="button"
+                                                className={`drawing-btn drawing-btn-pdf${drawing.hasPdf ? '' : ' is-disabled'}`}
+                                                disabled={!drawing.hasPdf}
+                                                onClick={() => drawingPdfUrl && window.open(drawingPdfUrl, '_blank', 'noopener,noreferrer')}
+                                                title="Open PDF"
+                                                aria-label={`Open PDF — ${pdfFileName}`}
+                                              >
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15" y2="17"/></svg>
+                                              </button>
+                                              <span className="drawing-file-name">{pdfFileName}</span>
+                                              {isEditing && (
+                                                <>
+                                                  <button
+                                                    type="button"
+                                                    className="drawing-btn drawing-btn-edit-path"
+                                                    onClick={() => toggleDrawingExpanded(drawingId)}
+                                                    title="Edit PDF"
+                                                    aria-label="Edit PDF"
+                                                  >
+                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                                  </button>
+                                                  <button
+                                                    type="button"
+                                                    className="drawing-btn drawing-btn-upload"
+                                                    title="Upload PDF"
+                                                    aria-label="Upload new PDF"
+                                                    disabled
+                                                  >
+                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                                  </button>
+                                                </>
+                                              )}
+                                            </div>
+
+                                            <div className="drawing-media-half">
+                                              <button
+                                                type="button"
+                                                className={`drawing-btn drawing-btn-3d${drawing.hasModel ? '' : ' is-disabled'}`}
+                                                disabled={!drawing.hasModel}
+                                                onClick={() => drawingModelUrl && window.open(drawingModelUrl, '_blank', 'noopener,noreferrer')}
+                                                title="Open 3D Model"
+                                                aria-label={`Open 3D — ${modelFileName}`}
+                                              >
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                                              </button>
+                                              <span className="drawing-file-name">{modelFileName}</span>
+                                              {isEditing && (
+                                                <>
+                                                  <button
+                                                    type="button"
+                                                    className="drawing-btn drawing-btn-edit-path"
+                                                    onClick={() => toggleDrawingExpanded(drawingId)}
+                                                    title="Edit 3D"
+                                                    aria-label="Edit 3D Model"
+                                                  >
+                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                                  </button>
+                                                  <button
+                                                    type="button"
+                                                    className="drawing-btn drawing-btn-upload"
+                                                    title="Upload 3D Model"
+                                                    aria-label="Upload new 3D model"
+                                                    disabled
+                                                  >
+                                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                                  </button>
+                                                </>
+                                              )}
+                                            </div>
+
+                                            {isEditing ? (
+                                              <>
+                                                <button
+                                                  type="button"
+                                                  className="drawing-btn drawing-btn-save"
+                                                  onClick={() => saveJobEdits(client, job)}
+                                                  title="Save"
+                                                  aria-label="Save changes"
+                                                >
+                                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                                </button>
+                                                <button
+                                                  type="button"
+                                                  className="drawing-btn drawing-btn-cancel"
+                                                  onClick={() => cancelEditJob(jobId)}
+                                                  title="Cancel"
+                                                  aria-label="Cancel editing"
+                                                >
+                                                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                                </button>
+                                              </>
+                                            ) : (
+                                              <button
+                                                type="button"
+                                                className="drawing-btn drawing-btn-delete"
+                                                onClick={() => deleteJobEdits(client, job)}
+                                                title="Delete metadata"
+                                                aria-label="Delete job metadata"
+                                              >
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                                              </button>
+                                            )}
+                                          </div>
+
+                                          {isEditing && isDrawingExpanded && (
+                                            <div className="client-drawing-expand">
+                                              <div className="drawing-path-group">
+                                                <label className="drawing-path-label">
+                                                  <span>PDF Path</span>
+                                                  <input
+                                                    type="text"
+                                                    value={pathDraft.pdf || ''}
+                                                    onChange={(e) => updateDrawingPathDraft(drawingId, 'pdf', e.target.value)}
+                                                    placeholder="e.g., pdf/drawing.pdf"
+                                                  />
+                                                </label>
+                                              </div>
+                                              <div className="drawing-path-group">
+                                                <label className="drawing-path-label">
+                                                  <span>3D Model Path</span>
+                                                  <input
+                                                    type="text"
+                                                    value={pathDraft.model || ''}
+                                                    onChange={(e) => updateDrawingPathDraft(drawingId, 'model', e.target.value)}
+                                                    placeholder="e.g., glb/model.glb"
+                                                  />
+                                                </label>
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
                                       )
                                     })}
                                   </div>
@@ -663,83 +877,7 @@ export function ProjectDashboard() {
                   )}
                 </section>
 
-                <div className="project-catalog-grid">
-                  {filteredFolderStatuses.map((entry) => {
-                    const modelUrl = entry.hasModel ? buildStandaloneViewerUrl(entry.modelFiles[0]) : ''
-                    const pdfUrl = entry.hasPdf ? entry.drawingFiles[0] : ''
 
-                    return (
-                    <article
-                      key={entry.projectFolder}
-                      className={`project-status-card ${entry.hasModel || entry.hasPdf ? 'is-clickable' : ''}`}
-                      onClick={() => openCatalogEntry(entry)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault()
-                          openCatalogEntry(entry)
-                        }
-                      }}
-                      tabIndex={entry.hasModel || entry.hasPdf ? 0 : -1}
-                      role={entry.hasModel || entry.hasPdf ? 'link' : undefined}
-                      aria-label={entry.hasModel || entry.hasPdf ? `Open ${entry.projectName}` : undefined}
-                    >
-                      <h2>{entry.projectName}</h2>
-                      <p className="project-folder-path">Client: {entry.clientName || entry.clientSlug}</p>
-                      <p className="project-folder-path">projects/{entry.projectFolder}</p>
-
-                      <div className="project-card-action-row">
-                        <div className="project-card-media">
-                          {entry.hasPreview ? (
-                            <img src={entry.previewImage} alt={`${entry.projectName} preview`} className="project-card-preview" />
-                          ) : (
-                            <div className="project-card-placeholder">No Preview</div>
-                          )}
-                        </div>
-
-                        <div className="project-status-links" onClick={(event) => event.stopPropagation()}>
-                          {modelUrl ? (
-                            <a href={modelUrl} target="_blank" rel="noreferrer">
-                              Open 3D
-                            </a>
-                          ) : (
-                            <span className="project-status-link-disabled">No 3D</span>
-                          )}
-
-                          {pdfUrl ? (
-                            <a href={pdfUrl} target="_blank" rel="noreferrer">
-                              Open PDF
-                            </a>
-                          ) : (
-                            <span className="project-status-link-disabled">No PDF</span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="project-status-row">
-                        <span>3D Model</span>
-                        <strong className={entry.hasModel ? 'status-ok' : 'status-missing'}>
-                          {entry.hasModel ? 'Available' : 'Missing'}
-                        </strong>
-                      </div>
-
-                      <div className="project-status-row">
-                        <span>PDF</span>
-                        <strong className={entry.hasPdf ? 'status-ok' : 'status-missing'}>
-                          {entry.hasPdf ? 'Available' : 'Missing'}
-                        </strong>
-                      </div>
-
-                    </article>
-                    )
-                  })}
-                </div>
-
-                {filteredFolderStatuses.length === 0 && (
-                  <section className="dashboard-placeholder">
-                    <h1>No matching projects.</h1>
-                    <p>Try a different search term.</p>
-                  </section>
-                )}
               </>
             )}
           </section>

@@ -1,6 +1,8 @@
-export function HeaderBar() {
-  const logoSrc = `${import.meta.env.BASE_URL}assets/logo.png`
+import { memo } from 'react'
 
+const logoSrc = `${import.meta.env.BASE_URL}assets/logo.png`
+
+export const HeaderBar = memo(function HeaderBar() {
   return (
     <header className="dashboard-header-shell">
       <div className="header-brand">
@@ -8,6 +10,8 @@ export function HeaderBar() {
           src={logoSrc}
           alt="LSC Fitouts"
           className="header-logo"
+          width="148"
+          height="37"
           onError={(event) => {
             event.currentTarget.onerror = null
             event.currentTarget.src = 'assets/logo.png'
@@ -23,4 +27,4 @@ export function HeaderBar() {
       </div>
     </header>
   )
-}
+})
