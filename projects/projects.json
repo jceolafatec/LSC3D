@@ -1,0 +1,32 @@
+{
+  "name": "main_page",
+  "type": "page",
+  "elements": [
+    {
+      "name": "header",
+      "type": "container",
+      "elements": [
+        {
+          "name": "logo",
+          "type": "image",
+          "src": "https://example.com/logo.png",
+          "alt": "Company Logo",
+          "attributes": {
+            "loading": "lazy"
+          }
+        }
+      ]
+    },
+    {
+      "name": "content",
+      "type": "container",
+      "elements": [
+        {
+          "name": "welcome_text",
+          "type": "text",
+          "content": "Welcome to our website"
+        }
+      ]
+    }
+  ]
+}

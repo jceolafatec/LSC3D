@@ -1,6 +1,8 @@
-export function Header({ project, title, subtitle, statusLabel }) {
-  const logoSrc = `${import.meta.env.BASE_URL}assets/logo.png`
+import { memo } from 'react'
 
+const logoSrc = `${import.meta.env.BASE_URL}assets/logo.png`
+
+export const Header = memo(function Header({ project, title, subtitle, statusLabel }) {
   return (
     <header className="dashboard-header" aria-label="Project header">
       <div className="header-left">
@@ -8,10 +10,10 @@ export function Header({ project, title, subtitle, statusLabel }) {
           src={logoSrc}
           alt="LSC Fitouts"
           className="header-logo"
-          onError={(event) => {
-            event.currentTarget.onerror = null
-            event.currentTarget.src = 'assets/logo.png'
-          }}
+          width="56"
+          height="56"
+          fetchpriority="high"
+          decoding="async"
         />
       </div>
 
@@ -25,4 +27,4 @@ export function Header({ project, title, subtitle, statusLabel }) {
       </div>
     </header>
   )
-}
+})

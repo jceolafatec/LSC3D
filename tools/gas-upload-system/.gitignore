@@ -1,4 +1,0 @@
-# Code.gs contains your Drive folder ID and shared secret.
-# It lives ONLY on Google's servers (script.google.com).
-# Never commit it.
-Code.gs

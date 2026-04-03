@@ -1,120 +1,83 @@
-# LSC Fitouts Client Viewer - Static Dashboard
+# LSC Fitouts Client Viewer
 
-Static React + Vite dashboard for GitHub Pages.
+React + Vite frontend served by a Node.js / Express backend.
+
+## Architecture
+
+```
+Browser → Express (port 3100) → /api/* routes → projects/ filesystem
+                              → /projects/*   → static GLB / PDF files
+                              → /*            → React SPA (frontend/dist)
+```
 
 ## Run Commands
 
 ```bash
-npm run dev
+# Install all dependencies
+npm run install:all
+
+# Development — start backend
+npm run dev:backend
+
+# Development — start frontend (Vite dev server)
+npm run dev:frontend
+
+# Production build (outputs to frontend/dist/)
 npm run build
-npm run preview
+
+# Deploy to Raspberry Pi via SMB share
 npm run deploy
 ```
 
-## GitHub Pages URL
+## Local Development
 
-Configured for deployment under:
-
-- https://jceolafatec.github.io/lscfitouts/
-
-## Share Links
-
-The app reads project tokens from the URL query string:
-
-- ?p=projectId
-
-Example:
-
-- https://jceolafatec.github.io/lscfitouts/?p=project123
-
-## Static Data
-
-All dashboard content is loaded from local files:
-
-- public/data/projects.json
-- public/models/*
-- public/pdf/*
-- public/assets/logo.png
-
-For client-share projects, place files under:
-
-- public/projects/<projectFolder>/glb/*
-- public/projects/<projectFolder>/pdf/*
-
-Then set relative paths in projects.json, for example:
-
-- "url": "glb/model.glb"
-- "url": "pdf/drawing.pdf"
-
-## Git LFS for GLB Files
-
-This repository tracks GLB files with Git LFS via `.gitattributes`:
-
-- `*.glb filter=lfs diff=lfs merge=lfs -text`
-- `*.GLB filter=lfs diff=lfs merge=lfs -text`
-
-Run once per machine:
+Start the backend (serves API + static files on port 3100):
 
 ```bash
-brew install git-lfs
-git lfs install
+cd backend
+npm install
+node server.js
 ```
 
-For already-committed large GLB files, migrate history carefully in a dedicated branch:
+Open: http://localhost:3100
+
+## Production (Raspberry Pi)
+
+The backend runs as a systemd service on the Pi.  
+Nginx reverse-proxies port 80 → port 3100 and exposes the app via Tailscale Funnel.
+
+See `lscfitouts-pi-setup.md` and `pi-setup.sh` for full Pi setup instructions.
+
+Deploy the latest build to the Pi:
 
 ```bash
-git lfs migrate import --include="*.glb,*.GLB"
+npm run deploy   # build + rsync via SMB mount
 ```
 
-## External Model URLs (JSON and Metadata)
+## Project Files
 
-The app supports external URLs in:
+Project assets live under `projects/`:
 
-- `public/data/projects.json` model/drawing `url` fields
-- `project-meta.xml` drawing attributes (`modelUrl`, `pdfUrl`, `imageUrl`)
-
-Example `projects.json` entry:
-
-```json
-{
-	"project123": {
-		"projectFolder": "byproxy/knobby-pacificfair",
-		"models": [{ "name": "Main", "url": "https://cdn.example.com/models/J01.glb" }],
-		"drawings": [{ "name": "Set", "url": "https://cdn.example.com/pdf/J01.pdf" }]
-	}
-}
+```
+projects/<client>/<job>/glb/        ← 3D model files (.glb)
+projects/<client>/<job>/pdf/        ← drawing PDFs
+projects/<client>/<job>/glb/project-meta.xml
+projects/<client>/<job>/comments.xml
 ```
 
-Example `project-meta.xml` entry:
+## API Endpoints
 
-```xml
-<projectMeta version="1" clientSlug="byproxy" jobSlug="knobby-pacificfair">
-	<clientName>Byproxy</clientName>
-	<jobName>Knobby Pacificfair</jobName>
-	<drawings>
-		<drawing slug="J01" name="J01 Island Gondolas" modelUrl="https://cdn.example.com/models/J01.glb" pdfUrl="https://cdn.example.com/pdf/J01.pdf" />
-	</drawings>
-</projectMeta>
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/projects` | List all projects |
+| GET/PUT/DELETE | `/api/comments` | Read/write comments XML |
+| GET/PUT/DELETE | `/api/project-meta` | Read/write project metadata XML |
+| GET | `/api/health` | Health check |
+
+## Git LFS
+
+GLB files are tracked with Git LFS via `.gitattributes`:
+
+```bash
+git lfs install   # run once per machine
 ```
-
-Google Drive note:
-
-- File links are normalized to direct-download format when possible.
-- Folder-share links (`/drive/folders/...`) are not a file endpoint and cannot be used directly as a project folder index.
-
-## Recommended Storage Split
-
-Use this split for reliability:
-
-- 3D/PDF files: external storage (Google Drive direct-file links or CDN)
-- XML metadata (`project-meta.xml`): Vercel API + Vercel Blob
-
-Why keep XML in Vercel instead of Drive:
-
-- Browser writes to Drive require OAuth and token refresh flows.
-- Drive sharing and CORS behavior is less predictable for app writes.
-- Vercel API already supports create/update/delete metadata in one place.
-
-Current production default:
-
-- GitHub Pages builds point metadata to `https://lscfitouts-comments-api.vercel.app/api/project-meta`.
